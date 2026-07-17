@@ -41,6 +41,17 @@ Si `ADMIN_TOKEN` n'est pas défini, l'interface admin renvoie `503` (désactivé
 npm run dev
 ```
 
+## Tester l'envoi d'une notification
+
+```bash
+npm run send-notification -- --api-key <clé> --title "Test" --body "Ça marche"
+
+# Alarme plein écran avec bouton "Reporter" à 5 min
+npm run send-notification -- --api-key <clé> --title "Réveil" --body "Debout" --type alarm --snooze 5
+```
+
+Voir `npm run send-notification -- --help` (ou sans argument) pour toutes les options. La clé peut aussi venir de la variable d'environnement `API_KEY`.
+
 ## API
 
 ### `POST /api/notify`
