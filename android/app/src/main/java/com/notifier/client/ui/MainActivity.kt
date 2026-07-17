@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarInsetsAsPadding()
         prefs = AppPrefs(this)
 
         binding.serverUrlInput.setText(prefs.serverUrl)
