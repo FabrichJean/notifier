@@ -1,0 +1,4 @@
+<resources>
+    <color name="alarm_background">#B00020</color>
+    <color name="alarm_text">#FFFFFF</color>
+</resources>
