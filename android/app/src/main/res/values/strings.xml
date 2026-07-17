@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Notifier</string>
+    <string name="server_url_label">URL du serveur (ex: ws://192.168.1.10:8787)</string>
+    <string name="device_token_label">Token device</string>
+    <string name="connect">Connecter</string>
+    <string name="disconnect">Déconnecter</string>
+    <string name="status_disconnected">Déconnecté</string>
+    <string name="status_connecting">Connexion en cours…</string>
+    <string name="status_connected">Connecté</string>
+    <string name="notification_channel_default_name">Notifications</string>
+    <string name="notification_channel_service_name">Service Notifier</string>
+    <string name="notification_channel_alarm_name">Alarmes</string>
+    <string name="service_notification_title">Notifier connecté</string>
+    <string name="service_notification_text">En écoute des notifications en temps réel</string>
+    <string name="alarm_dismiss">Arrêter</string>
+    <string name="alarm_snooze">Reporter</string>
+    <string name="received_notifications_label">Notifications reçues</string>
+    <string name="no_notifications_yet">Aucune notification reçue pour le moment</string>
+    <string name="edit_config">Modifier la configuration</string>
+</resources>
