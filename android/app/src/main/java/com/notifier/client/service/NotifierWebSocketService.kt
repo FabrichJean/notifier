@@ -1,5 +1,6 @@
 package com.notifier.client.service
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import com.notifier.client.AppPrefs
 import com.notifier.client.R
@@ -75,6 +77,23 @@ class NotifierWebSocketService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        if (!AppPrefs(this).isConfigured()) return
+
+        val restartIntent = Intent(applicationContext, NotifierWebSocketService::class.java)
+        val pendingIntent = PendingIntent.getService(
+            this, RESTART_REQUEST_CODE, restartIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.set(
+            AlarmManager.ELAPSED_REALTIME,
+            SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
+    }
+
     private fun ensureServiceChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = getSystemService(NotificationManager::class.java)
@@ -115,6 +134,7 @@ class NotifierWebSocketService : Service() {
         private const val SERVICE_CHANNEL_ID = "notifier_service"
         private const val SERVICE_NOTIFICATION_ID = 1
         private const val MAX_HISTORY = 50
+        private const val RESTART_REQUEST_CODE = 1
 
         private val _connectionStatus = MutableStateFlow(ConnectionStatus.DISCONNECTED)
         val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus.asStateFlow()

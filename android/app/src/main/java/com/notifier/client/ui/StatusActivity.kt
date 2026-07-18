@@ -34,9 +34,16 @@ class StatusActivity : AppCompatActivity() {
             NotifierWebSocketService.stop(this)
             goToConfig()
         }
+        binding.batteryOptimizationButton.setOnClickListener { requestIgnoreBatteryOptimizations(this) }
 
         observeConnectionStatus()
         observeReceivedNotifications()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.batteryOptimizationButton.visibility =
+            if (isIgnoringBatteryOptimizations(this)) View.GONE else View.VISIBLE
     }
 
     private fun goToConfig() {
