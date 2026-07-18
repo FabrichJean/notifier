@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -38,9 +39,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.connectButton.setOnClickListener { onConnectClicked() }
         binding.disconnectButton.setOnClickListener { onDisconnectClicked() }
+        binding.batteryOptimizationButton.setOnClickListener { requestIgnoreBatteryOptimizations(this) }
 
         requestNotificationPermissionIfNeeded()
         observeConnectionStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.batteryOptimizationButton.visibility =
+            if (isIgnoringBatteryOptimizations(this)) View.GONE else View.VISIBLE
     }
 
     private fun onConnectClicked() {
