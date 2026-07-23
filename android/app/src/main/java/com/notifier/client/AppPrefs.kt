@@ -21,14 +21,14 @@ class AppPrefs(context: Context) {
         get() = prefs.getString(KEY_SERVER_URL, null)
         set(value) = prefs.edit().putString(KEY_SERVER_URL, value).apply()
 
-    var deviceToken: String?
-        get() = prefs.getString(KEY_DEVICE_TOKEN, null)
-        set(value) = prefs.edit().putString(KEY_DEVICE_TOKEN, value).apply()
+    var adminToken: String?
+        get() = prefs.getString(KEY_ADMIN_TOKEN, null)
+        set(value) = prefs.edit().putString(KEY_ADMIN_TOKEN, value).apply()
 
-    fun isConfigured(): Boolean = !serverUrl.isNullOrBlank() && !deviceToken.isNullOrBlank()
+    fun isConfigured(): Boolean = !serverUrl.isNullOrBlank() && !adminToken.isNullOrBlank()
 
     companion object {
         private const val KEY_SERVER_URL = "server_url"
-        private const val KEY_DEVICE_TOKEN = "device_token"
+        private const val KEY_ADMIN_TOKEN = "admin_token"
     }
 }

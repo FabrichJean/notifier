@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class NotifierWebSocketService : Service() {
 
     private var wsClient: WsClient? = null
+    private var activeServerUrl: String? = null
+    private var activeAdminToken: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -37,20 +39,23 @@ class NotifierWebSocketService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val prefs = AppPrefs(this)
         val serverUrl = prefs.serverUrl
-        val deviceToken = prefs.deviceToken
+        val adminToken = prefs.adminToken
 
-        if (serverUrl.isNullOrBlank() || deviceToken.isNullOrBlank()) {
+        if (serverUrl.isNullOrBlank() || adminToken.isNullOrBlank()) {
             stopSelf()
             return START_NOT_STICKY
         }
 
-        if (wsClient == null) {
+        if (serverUrl != activeServerUrl || adminToken != activeAdminToken) {
+            wsClient?.disconnect()
             wsClient = WsClient(
                 serverUrl = serverUrl,
-                deviceToken = deviceToken,
+                deviceToken = adminToken,
                 onNotification = { data -> recordAndDispatch(data) },
                 onStatusChange = ::handleStatusChange,
             )
+            activeServerUrl = serverUrl
+            activeAdminToken = adminToken
             wsClient?.connect()
         }
 
@@ -71,6 +76,8 @@ class NotifierWebSocketService : Service() {
     override fun onDestroy() {
         wsClient?.disconnect()
         wsClient = null
+        activeServerUrl = null
+        activeAdminToken = null
         _connectionStatus.value = ConnectionStatus.DISCONNECTED
         super.onDestroy()
     }
@@ -142,6 +149,7 @@ class NotifierWebSocketService : Service() {
         private val _receivedNotifications = MutableStateFlow<List<NotificationData>>(emptyList())
         val receivedNotifications: StateFlow<List<NotificationData>> = _receivedNotifications.asStateFlow()
 
+        /** Starts the service if needed and reconciles it against the currently saved admin login. */
         fun start(context: Context) {
             val intent = Intent(context, NotifierWebSocketService::class.java)
             context.startForegroundService(intent)

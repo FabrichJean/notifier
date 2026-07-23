@@ -4,6 +4,10 @@ import { config } from "../config";
 
 export const ADMIN_COOKIE_NAME = "notifier_admin";
 
+/** Pseudo device id used for WS connections authenticated via the admin token
+ *  instead of a per-device token. Not a real row in the devices table. */
+export const ADMIN_CONNECTION_ID = "__admin__";
+
 export function isValidAdminToken(token: string): boolean {
   if (!config.adminToken) return false;
   const provided = Buffer.from(token);
@@ -40,12 +44,24 @@ export function requireAdminPage(req: Request, res: Response, next: NextFunction
   next();
 }
 
-/** Protects the admin JSON API: returns 401 when not authenticated. */
+/**
+ * Protects the admin JSON API: returns 401 when not authenticated.
+ * Accepts either the web session cookie (browser) or an `X-Admin-Token`
+ * header carrying the admin token directly (non-browser clients, e.g. the
+ * mobile app, which has no cookie jar tied to a login flow).
+ */
 export function requireAdminApi(req: Request, res: Response, next: NextFunction): void {
   if (!config.adminToken) {
     res.status(503).json({ error: "admin interface disabled: ADMIN_TOKEN not configured" });
     return;
   }
+
+  const headerToken = req.header("X-Admin-Token");
+  if (headerToken && isValidAdminToken(headerToken)) {
+    next();
+    return;
+  }
+
   if (!hasValidSession(req)) {
     res.status(401).json({ error: "unauthorized" });
     return;

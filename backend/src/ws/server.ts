@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from "node:http";
 import { URL } from "node:url";
 import { WebSocketServer, type WebSocket } from "ws";
+import { ADMIN_CONNECTION_ID, isValidAdminToken } from "../auth/adminAuth";
 import { authenticateDeviceToken, touchDeviceLastSeen } from "../auth/deviceAuth";
 import { ackDelivery, heartbeatSweep, markAlive, registerDevice, unregisterDevice } from "./hub";
 
@@ -16,10 +17,12 @@ export function attachWebSocketServer(httpServer: HttpServer): void {
     }
 
     const url = new URL(request.url, "http://localhost");
-    const token = url.searchParams.get("token") ?? request.headers["x-device-token"];
-    const device = authenticateDeviceToken(
-      Array.isArray(token) ? token[0] : (token as string | null)
-    );
+    const rawToken = url.searchParams.get("token") ?? request.headers["x-device-token"];
+    const token = Array.isArray(rawToken) ? rawToken[0] : (rawToken as string | null);
+
+    const device = token && isValidAdminToken(token)
+      ? { id: ADMIN_CONNECTION_ID, name: "Admin (tous les appareils)" }
+      : authenticateDeviceToken(token);
 
     if (!device) {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
