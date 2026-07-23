@@ -31,16 +31,6 @@
         </activity>
 
         <activity
-            android:name=".ui.StatusActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Notifier" />
-
-        <activity
-            android:name=".ui.ServerSettingsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Notifier" />
-
-        <activity
             android:name=".alarm.AlarmActivity"
             android:exported="false"
             android:showOnLockScreen="true"
