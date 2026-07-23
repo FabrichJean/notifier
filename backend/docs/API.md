@@ -33,6 +33,22 @@ X-API-Key: <votre clé API>
 | `type`     | `"notification"` \| `"alarm"` | oui | Type d'alerte (voir ci-dessous) |
 | `alarm`    | objet (voir plus bas)      | non    | Uniquement si `type` = `"alarm"` |
 | `metadata` | objet libre (clé/valeur)   | non    | Données additionnelles, transmises telles quelles, non affichées |
+| `deviceId` | string                     | non    | Cible un seul appareil (voir section ci-dessous). Omis = diffusion à tous les appareils connectés |
+
+### Cibler un appareil précis
+
+Par défaut (sans `deviceId`), la notification est diffusée à **tous** les appareils connectés. Pour ne toucher qu'un seul appareil, indiquez son `deviceId` (l'ID renvoyé à sa création, pas son nom) :
+
+```json
+{
+  "title": "Colis livré",
+  "body": "Ton colis est arrivé",
+  "type": "notification",
+  "deviceId": "91588a81-ff31-4a05-84aa-d014384bd114"
+}
+```
+
+Si `deviceId` ne correspond à aucun appareil, la requête échoue avec `404`. Si l'appareil a été révoqué, elle échoue avec `400`. Un compte admin connecté en mode observateur (voir README du backend) reçoit toujours la notification, qu'elle soit ciblée ou diffusée à tous.
 
 ### Type `notification`
 
@@ -93,8 +109,9 @@ Champ `alarm` (tous optionnels, valeurs par défaut indiquées) :
 
 | Code | Cause |
 |------|-------|
-| `400` | Corps de requête invalide (champ manquant, type incorrect, texte trop long...). Le détail est dans `details`. |
+| `400` | Corps de requête invalide (champ manquant, type incorrect, texte trop long...), ou `deviceId` correspondant à un appareil révoqué. Le détail est dans `details`. |
 | `401` | En-tête `X-API-Key` manquant, invalide ou révoqué. |
+| `404` | `deviceId` fourni ne correspond à aucun appareil. |
 | `429` | Trop de requêtes : limite de 60 requêtes par minute par serveur. |
 
 ## 3. Exemples

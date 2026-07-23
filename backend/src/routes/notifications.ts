@@ -12,6 +12,8 @@ interface NotificationRow {
   type: string;
   alarm_config: string | null;
   metadata: string | null;
+  target_device_id: string | null;
+  target_device_name: string | null;
   created_at: string;
 }
 
@@ -26,19 +28,18 @@ notificationsRouter.get("/api/notifications", apiKeyAuth, (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 50, 200);
   const before = typeof req.query.before === "string" ? req.query.before : null;
 
+  const baseQuery = `SELECT n.id, n.source_app_name, n.title, n.body, n.type, n.alarm_config, n.metadata,
+      n.target_device_id, td.name as target_device_name, n.created_at
+     FROM notifications n
+     LEFT JOIN devices td ON td.id = n.target_device_id`;
+
   const rows = (
     before
       ? db
-          .prepare(
-            `SELECT id, source_app_name, title, body, type, alarm_config, metadata, created_at
-             FROM notifications WHERE created_at < ? ORDER BY created_at DESC LIMIT ?`
-          )
+          .prepare(`${baseQuery} WHERE n.created_at < ? ORDER BY n.created_at DESC LIMIT ?`)
           .all(before, limit)
       : db
-          .prepare(
-            `SELECT id, source_app_name, title, body, type, alarm_config, metadata, created_at
-             FROM notifications ORDER BY created_at DESC LIMIT ?`
-          )
+          .prepare(`${baseQuery} ORDER BY n.created_at DESC LIMIT ?`)
           .all(limit)
   ) as NotificationRow[];
 
@@ -56,6 +57,8 @@ notificationsRouter.get("/api/notifications", apiKeyAuth, (req, res) => {
     type: row.type,
     alarm: row.alarm_config ? JSON.parse(row.alarm_config) : null,
     metadata: row.metadata ? JSON.parse(row.metadata) : null,
+    targetDeviceId: row.target_device_id,
+    targetDeviceName: row.target_device_name,
     createdAt: row.created_at,
     deliveries: (deliveryStmt.all(row.id) as DeliveryRow[]).map((d) => ({
       deviceId: d.device_id,

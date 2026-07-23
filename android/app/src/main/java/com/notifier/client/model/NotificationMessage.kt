@@ -19,6 +19,8 @@ data class NotificationData(
     val type: String,
     val alarm: AlarmConfig? = null,
     val source: String,
+    val targetDeviceId: String? = null,
+    val targetDeviceName: String? = null,
     val createdAt: String,
 )
 
