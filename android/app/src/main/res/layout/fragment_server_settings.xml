@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_aurora">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="24dp"
+        android:text="@string/server_settings_title"
+        android:textAllCaps="true"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/dash_emerald_bright"
+        app:hintTextColor="@color/glass_text_on_emerald">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/serverUrlInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"
+            android:textColor="@color/glass_text_primary"
+            android:textColorHint="@color/glass_text_on_emerald"
+            android:hint="@string/server_url_label" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:paddingBottom="4dp"
+        android:text="@string/admin_login_label"
+        android:textColor="@color/glass_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"
+        android:textColor="@color/glass_text_on_emerald"
+        android:text="@string/admin_login_description" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/dash_emerald_bright"
+        app:hintTextColor="@color/glass_text_on_emerald"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/glass_text_on_emerald">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/adminTokenInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textColor="@color/glass_text_primary"
+            android:textColorHint="@color/glass_text_on_emerald"
+            android:hint="@string/admin_token_label" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/dash_emerald"
+        android:text="@string/action_save" />
+
+</LinearLayout>
