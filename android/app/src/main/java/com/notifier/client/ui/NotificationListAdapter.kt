@@ -1,5 +1,6 @@
 package com.notifier.client.ui
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,9 +35,13 @@ class NotificationListAdapter(
             binding.urgentBadge.visibility = if (isAlarm) View.VISIBLE else View.GONE
 
             val iconRes = if (isAlarm) R.drawable.ic_warning else R.drawable.ic_bell
-            val bgColorRes = if (isAlarm) R.color.icon_bg_alert else R.color.icon_bg_message
+            val neonColorRes = if (isAlarm) R.color.neon_alert else R.color.neon_message
+            val neon = ContextCompat.getColor(context, neonColorRes)
+
             binding.typeIcon.setImageResource(iconRes)
-            binding.iconBackground.background.setTint(ContextCompat.getColor(context, bgColorRes))
+            binding.typeIconGlow.setImageResource(iconRes)
+            binding.typeIcon.imageTintList = ColorStateList.valueOf(neon)
+            binding.typeIconGlow.imageTintList = ColorStateList.valueOf(neon)
 
             val time = data.createdAt.replace("T", " ").take(19)
             binding.notifTime.text = if (showDeviceName) {

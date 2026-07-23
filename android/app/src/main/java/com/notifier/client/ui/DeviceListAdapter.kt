@@ -1,5 +1,6 @@
 package com.notifier.client.ui
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -25,13 +26,18 @@ class DeviceListAdapter(
 
     class ViewHolder(private val binding: ItemDeviceBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(device: RemoteDevice, onClick: (RemoteDevice) -> Unit) {
+            val context = binding.root.context
             binding.deviceName.text = device.name
 
             val isRevoked = device.revokedAt != null
             val colorRes = if (isRevoked) R.color.status_disconnected else R.color.status_connected
             val labelRes = if (isRevoked) R.string.device_revoked else R.string.device_active
             binding.deviceStatusLabel.setText(labelRes)
-            binding.statusDot.background.setTint(ContextCompat.getColor(binding.root.context, colorRes))
+            binding.statusDot.background.setTint(ContextCompat.getColor(context, colorRes))
+
+            val neon = ContextCompat.getColor(context, R.color.neon_device)
+            binding.deviceIcon.imageTintList = ColorStateList.valueOf(neon)
+            binding.deviceIconGlow.imageTintList = ColorStateList.valueOf(neon)
 
             binding.root.setOnClickListener { onClick(device) }
         }
