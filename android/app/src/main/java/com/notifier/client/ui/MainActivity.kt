@@ -1,37 +1,19 @@
 package com.notifier.client.ui
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
+import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.notifier.client.AppPrefs
+import androidx.fragment.app.Fragment
 import com.notifier.client.R
 import com.notifier.client.databinding.ActivityMainBinding
-import com.notifier.client.model.RemoteDevice
-import com.notifier.client.network.AdminApi
-import com.notifier.client.network.ConnectionStatus
-import com.notifier.client.service.NotifierWebSocketService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity() {
+private enum class Tab(val index: Int) { DEVICES(0), NOTIFICATIONS(1), SETTINGS(2) }
+
+class MainActivity : AppCompatActivity(), TabHost {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var prefs: AppPrefs
-    private lateinit var adapter: DeviceListAdapter
-
-    private val notificationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
+    private var currentTab: Tab = Tab.DEVICES
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,86 +21,63 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.root.applySystemBarInsetsAsPadding()
         useLightSystemBarIcons()
-        prefs = AppPrefs(this)
 
-        adapter = DeviceListAdapter(onClick = { device -> openNotificationsFor(device) })
-        binding.deviceList.layoutManager = LinearLayoutManager(this)
-        binding.deviceList.adapter = adapter
+        binding.bottomNav.navDevicesTab.setOnClickListener { switchTab(Tab.DEVICES) }
+        binding.bottomNav.navNotificationsTab.setOnClickListener { switchTab(Tab.NOTIFICATIONS) }
+        binding.bottomNav.navNotificationsCircle.setOnClickListener { switchTab(Tab.NOTIFICATIONS) }
+        binding.bottomNav.navSettingsTab.setOnClickListener { switchTab(Tab.SETTINGS) }
 
-        binding.batteryOptimizationButton.setOnClickListener { requestIgnoreBatteryOptimizations(this) }
-        binding.serverSettingsButton.setOnClickListener {
-            startActivity(Intent(this, ServerSettingsActivity::class.java))
+        binding.bottomNav.navNotificationsIcon.imageTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this, R.color.dash_emerald_bright))
+
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .add(R.id.fragmentContainer, DevicesFragment())
+                .commit()
         }
-
-        binding.bottomNav.selectedItemId = R.id.nav_devices
-        binding.bottomNav.setOnItemSelectedListener { item ->
-            if (item.itemId == R.id.nav_notifications) {
-                startActivity(Intent(this, StatusActivity::class.java))
-                finish()
-            }
-            true
-        }
-
-        requestNotificationPermissionIfNeeded()
-        observeConnectionStatus()
+        updateTabIndicators()
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (prefs.isConfigured()) {
-            NotifierWebSocketService.start(this)
-            refreshDeviceList()
-        }
-        binding.batteryOptimizationButton.visibility =
-            if (isIgnoringBatteryOptimizations(this)) View.GONE else View.VISIBLE
+    override fun showNotificationsTab(deviceId: String?, deviceName: String?) {
+        switchTab(Tab.NOTIFICATIONS, NotificationsFragment.newInstance(deviceId, deviceName))
     }
 
-    private fun openNotificationsFor(device: RemoteDevice) {
-        val intent = Intent(this, StatusActivity::class.java)
-        intent.putExtra(StatusActivity.EXTRA_DEVICE_ID, device.id)
-        intent.putExtra(StatusActivity.EXTRA_DEVICE_NAME, device.name)
-        startActivity(intent)
+    private fun switchTab(target: Tab, explicitFragment: Fragment? = null) {
+        val isRedundantTap = target == currentTab && explicitFragment == null && target != Tab.NOTIFICATIONS
+        if (isRedundantTap) return
+
+        val forward = target.index > currentTab.index
+        val fragment = explicitFragment ?: when (target) {
+            Tab.DEVICES -> DevicesFragment()
+            Tab.NOTIFICATIONS -> NotificationsFragment.newInstance()
+            Tab.SETTINGS -> ServerSettingsFragment()
+        }
+
+        val (enterAnim, exitAnim) = if (forward) {
+            R.anim.slide_in_right to R.anim.slide_out_left
+        } else {
+            R.anim.slide_in_left to R.anim.slide_out_right
+        }
+
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(enterAnim, exitAnim)
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+
+        currentTab = target
+        updateTabIndicators()
     }
 
-    private fun refreshDeviceList() {
-        val serverUrl = prefs.serverUrl ?: return
-        val adminToken = prefs.adminToken ?: return
-
-        lifecycleScope.launch {
-            val devices = withContext(Dispatchers.IO) {
-                runCatching { AdminApi.fetchDevices(serverUrl, adminToken) }.getOrDefault(emptyList())
-            }
-            adapter.submitList(devices)
-            binding.emptyLabel.visibility = if (devices.isEmpty()) View.VISIBLE else View.GONE
-        }
-    }
-
-    private fun observeConnectionStatus() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                NotifierWebSocketService.connectionStatus.collect { status ->
-                    binding.statusLabel.text = when (status) {
-                        ConnectionStatus.CONNECTED -> getString(R.string.status_connected)
-                        ConnectionStatus.CONNECTING -> getString(R.string.status_connecting)
-                        ConnectionStatus.DISCONNECTED -> getString(R.string.status_disconnected)
-                    }
-                    if (status == ConnectionStatus.CONNECTED) {
-                        refreshDeviceList()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
-        val granted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (!granted) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+    private fun updateTabIndicators() {
+        setBottomNavTabActive(
+            binding.bottomNav.navDevicesIndicator, binding.bottomNav.navDevicesIcon, binding.bottomNav.navDevicesLabel,
+            active = currentTab == Tab.DEVICES
+        )
+        val notificationsColorRes = if (currentTab == Tab.NOTIFICATIONS) R.color.dash_emerald_bright else R.color.glass_text_secondary
+        binding.bottomNav.navNotificationsLabel.setTextColor(ContextCompat.getColor(this, notificationsColorRes))
+        setBottomNavTabActive(
+            binding.bottomNav.navSettingsIndicator, binding.bottomNav.navSettingsIcon, binding.bottomNav.navSettingsLabel,
+            active = currentTab == Tab.SETTINGS
+        )
     }
 }

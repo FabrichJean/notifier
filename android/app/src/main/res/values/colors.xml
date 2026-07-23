@@ -15,19 +15,23 @@
     <color name="text_muted">#6B7280</color>
     <color name="danger">#DC2626</color>
 
-    <!-- Aurora glass theme -->
-    <color name="aurora_base">#151233</color>
-    <color name="aurora_teal">#2DD4BF</color>
-    <color name="aurora_purple">#8B5CF6</color>
-    <color name="aurora_blue">#38BDF8</color>
-    <color name="aurora_pink">#F472B6</color>
+    <!-- Emerald-to-slate theme: dark background, light text -->
+    <color name="aurora_base">#0F172A</color>
+    <color name="dash_emerald">#10B981</color>
+    <color name="dash_emerald_bright">#34D399</color>
 
-    <color name="glass_card_fill">#40FFFFFF</color>
-    <color name="glass_card_stroke">#4DFFFFFF</color>
+    <color name="glass_card_fill">#E01E293B</color>
+    <color name="glass_card_stroke">#33FFFFFF</color>
     <color name="glass_text_primary">#F8FAFC</color>
-    <color name="glass_text_secondary">#CBD5E1</color>
+    <color name="glass_text_secondary">#94A3B8</color>
+    <color name="glass_text_on_emerald">#E6FFFFFF</color>
 
-    <color name="urgent_badge_bg">#DC2626</color>
+    <!-- Neon accent per content type: card border + icon color -->
+    <color name="neon_alert">#F43F5E</color>
+    <color name="neon_message">#0EA5E9</color>
+    <color name="neon_device">#8B5CF6</color>
+
+    <color name="urgent_badge_bg">#F43F5E</color>
     <color name="icon_bg_alert">#EF4444</color>
     <color name="icon_bg_message">#8B5CF6</color>
     <color name="icon_bg_order">#10B981</color>
