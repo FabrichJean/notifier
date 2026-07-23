@@ -14,6 +14,8 @@ export interface NotifyRequestBody {
   type: NotificationType;
   alarm?: Partial<AlarmConfig>;
   metadata?: Record<string, unknown>;
+  /** Optional: target a single device. Omit to broadcast to every connected device. */
+  deviceId?: string;
 }
 
 export interface StoredNotification {
@@ -25,6 +27,7 @@ export interface StoredNotification {
   type: NotificationType;
   alarmConfig: AlarmConfig | null;
   metadata: Record<string, unknown> | null;
+  targetDeviceId: string | null;
   createdAt: string;
 }
 
@@ -38,6 +41,8 @@ export interface DeviceEnvelope {
     alarm: AlarmConfig | null;
     source: string;
     metadata: Record<string, unknown> | null;
+    targetDeviceId: string | null;
+    targetDeviceName: string | null;
     createdAt: string;
   };
 }

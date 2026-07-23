@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { WebSocket } from "ws";
+import { ADMIN_CONNECTION_ID } from "../auth/adminAuth";
 import { db } from "../db";
 import type { DeviceEnvelope } from "../types";
 
@@ -35,12 +36,19 @@ export function connectedDeviceCount(): number {
   return connections.size;
 }
 
-export function broadcast(envelope: DeviceEnvelope): { deviceId: string }[] {
+/**
+ * Sends the envelope to connected sockets. When `targetDeviceId` is set, only that
+ * device (plus any admin observers) receives it; omit it to broadcast to everyone.
+ */
+export function broadcast(envelope: DeviceEnvelope, targetDeviceId?: string | null): { deviceId: string }[] {
   const delivered: { deviceId: string }[] = [];
   const payload = JSON.stringify(envelope);
 
   for (const { deviceId, socket } of connections.values()) {
-    if (socket.readyState === socket.OPEN) {
+    const isAdminObserver = deviceId === ADMIN_CONNECTION_ID;
+    const shouldDeliver = !targetDeviceId || deviceId === targetDeviceId || isAdminObserver;
+
+    if (shouldDeliver && socket.readyState === socket.OPEN) {
       socket.send(payload);
       delivered.push({ deviceId });
     }
