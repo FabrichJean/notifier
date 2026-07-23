@@ -1,9 +1,6 @@
 <resources>
     <string name="app_name">Notifier</string>
     <string name="server_url_label">URL du serveur (ex: ws://192.168.1.10:8787)</string>
-    <string name="device_token_label">Token device</string>
-    <string name="connect">Connecter</string>
-    <string name="disconnect">Déconnecter</string>
     <string name="status_disconnected">Déconnecté</string>
     <string name="status_connecting">Connexion en cours…</string>
     <string name="status_connected">Connecté</string>
@@ -16,6 +13,23 @@
     <string name="alarm_snooze">Reporter</string>
     <string name="received_notifications_label">Notifications reçues</string>
     <string name="no_notifications_yet">Aucune notification reçue pour le moment</string>
-    <string name="edit_config">Modifier la configuration</string>
     <string name="disable_battery_optimization">Désactiver l\'optimisation de batterie</string>
+
+    <string name="my_devices_title">Appareils enregistrés</string>
+    <string name="no_devices_yet">Aucun appareil enregistré sur ce serveur.</string>
+    <string name="action_save">Enregistrer</string>
+    <string name="view_notifications">Voir les notifications</string>
+    <string name="device_active">Actif</string>
+    <string name="device_revoked">Révoqué</string>
+
+    <string name="server_settings_title">Paramètres serveur</string>
+    <string name="server_settings_action">Paramètres serveur</string>
+    <string name="admin_login_label">Connexion admin</string>
+    <string name="admin_login_description">Requis. Utilise le jeton admin du serveur (le même que pour la page /admin) pour recevoir les notifications de tous les appareils.</string>
+    <string name="admin_token_label">Token admin</string>
+    <string name="admin_connection_name">Tous les appareils (admin)</string>
+
+    <string name="nav_devices">Appareils</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="badge_urgent">URGENT</string>
 </resources>
