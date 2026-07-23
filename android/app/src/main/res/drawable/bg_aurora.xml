@@ -8,57 +8,14 @@
     </item>
 
     <item
-        android:width="480dp"
-        android:height="480dp"
-        android:top="-180dp"
-        android:start="-140dp">
-        <shape android:shape="oval">
+        android:height="320dp"
+        android:gravity="top|fill_horizontal">
+        <shape android:shape="rectangle">
             <gradient
-                android:type="radial"
-                android:gradientRadius="240dp"
-                android:startColor="@color/aurora_teal"
-                android:endColor="#00000000" />
-        </shape>
-    </item>
-
-    <item
-        android:width="420dp"
-        android:height="420dp"
-        android:top="220dp"
-        android:end="-160dp">
-        <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="210dp"
-                android:startColor="@color/aurora_purple"
-                android:endColor="#00000000" />
-        </shape>
-    </item>
-
-    <item
-        android:width="560dp"
-        android:height="560dp"
-        android:bottom="-220dp"
-        android:start="-120dp">
-        <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="280dp"
-                android:startColor="@color/aurora_blue"
-                android:endColor="#00000000" />
-        </shape>
-    </item>
-
-    <item
-        android:width="360dp"
-        android:height="360dp"
-        android:top="600dp"
-        android:end="-100dp">
-        <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="180dp"
-                android:startColor="@color/aurora_pink"
+                android:angle="270"
+                android:type="linear"
+                android:startColor="@color/dash_emerald_bright"
+                android:centerColor="@color/dash_emerald"
                 android:endColor="#00000000" />
         </shape>
     </item>
