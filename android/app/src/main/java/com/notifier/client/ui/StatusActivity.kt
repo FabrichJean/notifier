@@ -3,83 +3,66 @@ package com.notifier.client.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.notifier.client.R
 import com.notifier.client.databinding.ActivityStatusBinding
-import com.notifier.client.model.NotificationData
-import com.notifier.client.network.ConnectionStatus
 import com.notifier.client.service.NotifierWebSocketService
 import kotlinx.coroutines.launch
 
 class StatusActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityStatusBinding
-    private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var adapter: NotificationListAdapter
+    private var filterDeviceId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityStatusBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.root.applySystemBarInsetsAsPadding()
+        useLightSystemBarIcons()
 
-        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1)
+        filterDeviceId = intent.getStringExtra(EXTRA_DEVICE_ID)
+        intent.getStringExtra(EXTRA_DEVICE_NAME)?.let { name ->
+            binding.screenTitle.text = name
+        }
+
+        adapter = NotificationListAdapter(showDeviceName = filterDeviceId == null)
+        binding.notificationsList.layoutManager = LinearLayoutManager(this)
         binding.notificationsList.adapter = adapter
 
-        binding.editConfigButton.setOnClickListener { goToConfig() }
-        binding.disconnectButton.setOnClickListener {
-            NotifierWebSocketService.stop(this)
-            goToConfig()
-        }
-        binding.batteryOptimizationButton.setOnClickListener { requestIgnoreBatteryOptimizations(this) }
-
-        observeConnectionStatus()
-        observeReceivedNotifications()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.batteryOptimizationButton.visibility =
-            if (isIgnoringBatteryOptimizations(this)) View.GONE else View.VISIBLE
-    }
-
-    private fun goToConfig() {
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
-    }
-
-    private fun observeConnectionStatus() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                NotifierWebSocketService.connectionStatus.collect { status ->
-                    binding.statusLabel.text = when (status) {
-                        ConnectionStatus.CONNECTED -> getString(R.string.status_connected)
-                        ConnectionStatus.CONNECTING -> getString(R.string.status_connecting)
-                        ConnectionStatus.DISCONNECTED -> getString(R.string.status_disconnected)
-                    }
-                }
+        binding.bottomNav.selectedItemId = R.id.nav_notifications
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            if (item.itemId == R.id.nav_devices) {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }
+            true
         }
+
+        observeReceivedNotifications()
     }
 
     private fun observeReceivedNotifications() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 NotifierWebSocketService.receivedNotifications.collect { list ->
-                    binding.emptyLabel.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
-                    adapter.clear()
-                    adapter.addAll(list.map(::formatEntry))
+                    val filtered = filterDeviceId?.let { id ->
+                        list.filter { it.targetDeviceId == id }
+                    } ?: list
+                    binding.emptyLabel.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                    adapter.submitList(filtered)
                 }
             }
         }
     }
 
-    private fun formatEntry(data: NotificationData): String {
-        val time = data.createdAt.replace("T", " ").take(19)
-        val typeLabel = if (data.type == "alarm") "[ALARME]" else "[NOTIF]"
-        return "$typeLabel $time\n${data.title} — ${data.body}"
+    companion object {
+        const val EXTRA_DEVICE_ID = "extra_device_id"
+        const val EXTRA_DEVICE_NAME = "extra_device_name"
     }
 }

@@ -1,4 +1,34 @@
 <resources>
     <color name="alarm_background">#B00020</color>
     <color name="alarm_text">#FFFFFF</color>
+
+    <color name="brand_primary">#4F46E5</color>
+    <color name="brand_primary_dark">#3730A3</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="brand_primary_container">#E0E7FF</color>
+    <color name="brand_on_primary_container">#312E81</color>
+
+    <color name="status_connected">#22C55E</color>
+    <color name="status_connecting">#F59E0B</color>
+    <color name="status_disconnected">#9CA3AF</color>
+
+    <color name="text_muted">#6B7280</color>
+    <color name="danger">#DC2626</color>
+
+    <!-- Aurora glass theme -->
+    <color name="aurora_base">#151233</color>
+    <color name="aurora_teal">#2DD4BF</color>
+    <color name="aurora_purple">#8B5CF6</color>
+    <color name="aurora_blue">#38BDF8</color>
+    <color name="aurora_pink">#F472B6</color>
+
+    <color name="glass_card_fill">#40FFFFFF</color>
+    <color name="glass_card_stroke">#4DFFFFFF</color>
+    <color name="glass_text_primary">#F8FAFC</color>
+    <color name="glass_text_secondary">#CBD5E1</color>
+
+    <color name="urgent_badge_bg">#DC2626</color>
+    <color name="icon_bg_alert">#EF4444</color>
+    <color name="icon_bg_message">#8B5CF6</color>
+    <color name="icon_bg_order">#10B981</color>
 </resources>

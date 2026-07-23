@@ -12,17 +12,23 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.notifier.client.AppPrefs
 import com.notifier.client.R
 import com.notifier.client.databinding.ActivityMainBinding
+import com.notifier.client.model.RemoteDevice
+import com.notifier.client.network.AdminApi
 import com.notifier.client.network.ConnectionStatus
 import com.notifier.client.service.NotifierWebSocketService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: AppPrefs
+    private lateinit var adapter: DeviceListAdapter
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
@@ -32,14 +38,26 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.root.applySystemBarInsetsAsPadding()
+        useLightSystemBarIcons()
         prefs = AppPrefs(this)
 
-        binding.serverUrlInput.setText(prefs.serverUrl)
-        binding.deviceTokenInput.setText(prefs.deviceToken)
+        adapter = DeviceListAdapter(onClick = { device -> openNotificationsFor(device) })
+        binding.deviceList.layoutManager = LinearLayoutManager(this)
+        binding.deviceList.adapter = adapter
 
-        binding.connectButton.setOnClickListener { onConnectClicked() }
-        binding.disconnectButton.setOnClickListener { onDisconnectClicked() }
         binding.batteryOptimizationButton.setOnClickListener { requestIgnoreBatteryOptimizations(this) }
+        binding.serverSettingsButton.setOnClickListener {
+            startActivity(Intent(this, ServerSettingsActivity::class.java))
+        }
+
+        binding.bottomNav.selectedItemId = R.id.nav_devices
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            if (item.itemId == R.id.nav_notifications) {
+                startActivity(Intent(this, StatusActivity::class.java))
+                finish()
+            }
+            true
+        }
 
         requestNotificationPermissionIfNeeded()
         observeConnectionStatus()
@@ -47,23 +65,32 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (prefs.isConfigured()) {
+            NotifierWebSocketService.start(this)
+            refreshDeviceList()
+        }
         binding.batteryOptimizationButton.visibility =
             if (isIgnoringBatteryOptimizations(this)) View.GONE else View.VISIBLE
     }
 
-    private fun onConnectClicked() {
-        val serverUrl = binding.serverUrlInput.text.toString().trim()
-        val deviceToken = binding.deviceTokenInput.text.toString().trim()
-
-        if (serverUrl.isEmpty() || deviceToken.isEmpty()) return
-
-        prefs.serverUrl = serverUrl
-        prefs.deviceToken = deviceToken
-        NotifierWebSocketService.start(this)
+    private fun openNotificationsFor(device: RemoteDevice) {
+        val intent = Intent(this, StatusActivity::class.java)
+        intent.putExtra(StatusActivity.EXTRA_DEVICE_ID, device.id)
+        intent.putExtra(StatusActivity.EXTRA_DEVICE_NAME, device.name)
+        startActivity(intent)
     }
 
-    private fun onDisconnectClicked() {
-        NotifierWebSocketService.stop(this)
+    private fun refreshDeviceList() {
+        val serverUrl = prefs.serverUrl ?: return
+        val adminToken = prefs.adminToken ?: return
+
+        lifecycleScope.launch {
+            val devices = withContext(Dispatchers.IO) {
+                runCatching { AdminApi.fetchDevices(serverUrl, adminToken) }.getOrDefault(emptyList())
+            }
+            adapter.submitList(devices)
+            binding.emptyLabel.visibility = if (devices.isEmpty()) View.VISIBLE else View.GONE
+        }
     }
 
     private fun observeConnectionStatus() {
@@ -76,8 +103,7 @@ class MainActivity : AppCompatActivity() {
                         ConnectionStatus.DISCONNECTED -> getString(R.string.status_disconnected)
                     }
                     if (status == ConnectionStatus.CONNECTED) {
-                        startActivity(Intent(this@MainActivity, StatusActivity::class.java))
-                        finish()
+                        refreshDeviceList()
                     }
                 }
             }
