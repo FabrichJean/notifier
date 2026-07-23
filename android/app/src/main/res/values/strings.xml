@@ -31,5 +31,11 @@
 
     <string name="nav_devices">Appareils</string>
     <string name="nav_notifications">Notifications</string>
+    <string name="nav_settings">Paramètres</string>
     <string name="badge_urgent">URGENT</string>
+
+    <string name="stat_devices_label">Actifs</string>
+    <string name="stat_notifications_label">Reçues</string>
+    <string name="stat_alarms_label">Alarmes</string>
+    <string name="stat_chart_label">7 derniers jours</string>
 </resources>
