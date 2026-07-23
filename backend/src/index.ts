@@ -1,5 +1,6 @@
 import http from "node:http";
 import express from "express";
+import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
@@ -29,6 +30,15 @@ const notifyLimiter = rateLimit({
 });
 
 app.use(healthRouter);
+app.use(
+  "/api",
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "X-API-Key"],
+  }),
+  helmet.crossOriginResourcePolicy({ policy: "cross-origin" })
+);
 app.use("/api/notify", notifyLimiter);
 app.use(notifyRouter);
 app.use(notificationsRouter);
