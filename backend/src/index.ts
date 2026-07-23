@@ -18,7 +18,10 @@ runMigrations();
 const logger = pino({ level: config.logLevel });
 const app = express();
 
-app.use(helmet());
+// hsts désactivé : ce serveur ne sert que du HTTP brut (pas de TLS). L'envoyer
+// pousserait les navigateurs à forcer https:// sur cet hôte, ce qui casse tout
+// puisqu'aucun certificat n'est servi ici.
+app.use(helmet({ hsts: false }));
 app.use(express.json({ limit: "50kb" }));
 app.use(pinoHttp({ logger }));
 
