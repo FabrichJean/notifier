@@ -54,7 +54,15 @@ class WsClient(
 
         val base = serverUrl.trimEnd('/')
         val url = "$base/ws?token=$deviceToken"
-        val request = Request.Builder().url(url).build()
+
+        val request = try {
+            Request.Builder().url(url).build()
+        } catch (e: IllegalArgumentException) {
+            Log.w(TAG, "URL de serveur invalide: ${e.message}")
+            onStatusChange(ConnectionStatus.DISCONNECTED)
+            scheduleReconnect()
+            return
+        }
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
